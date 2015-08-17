@@ -5,15 +5,17 @@ import base64
 from StringIO import StringIO
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.decomposition import RandomizedPCA
+from sklearn.preprocessing import StandardScaler
 
 import utils
 
 path = "/Coding/Data/gimpy-r-ball/"
 """
-The n_components variable should be equal to the factorial of the number of letters each captcha has. 
+The n_components variable should be equal to the factorial of the number of letters each captcha has.
 """
 pca = RandomizedPCA(n_components=24)
-knn = KNeighborsClassifier()
+knn = KNeighborsClassifier(n_neighbors=13)
+std_scaler = StandardScaler()
 def img_to_matrix(filename):
     """
     takes a filename and turns it into a numpy array of RGB pixels
@@ -69,6 +71,8 @@ def process_data(image_array):
 def fit_data(data):
     print "Running RandomizedPCA filter on dataset to reduce dimentions"
     train_x = pca.fit_transform(data)
+    print "Running StandardScaler to scale down mean"
+    train_x = std_scaler.fit_transform(train_x)
     return train_x
 
 def string_to_img(img_path):
