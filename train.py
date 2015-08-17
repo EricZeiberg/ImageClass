@@ -4,10 +4,16 @@ import os
 import base64
 from StringIO import StringIO
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.decomposition import RandomizedPCA
 
 import utils
 
 path = "/Coding/Data/gimpy-r-ball/"
+"""
+The n_components variable should be equal to the factorial of the number of letters each captcha has. 
+"""
+pca = RandomizedPCA(n_components=24)
+knn = KNeighborsClassifier()
 def img_to_matrix(filename):
     """
     takes a filename and turns it into a numpy array of RGB pixels
@@ -60,5 +66,32 @@ def process_data(image_array):
     data = np.array(data)
     return data
 
+def fit_data(data):
+    print "Running RandomizedPCA filter on dataset to reduce dimentions"
+    train_x = pca.fit_transform(data)
+    return train_x
+
+def string_to_img(img_path):
+    print "called string_to_img"
+    img = Image.open(img_path)
+    img = list(img.getdata())
+    img = map(list, img)
+    img = np.array(img)
+    s = img.shape[0] * img.shape[1]
+    img_wide = img.reshape(1, s)
+    return pca.transform(img_wide[0])
+
+def classify_image(data):
+    print "called classify_image"
+    preds = knn.predict(data)
+    return preds
+
 image_files = import_data(path)
 processed_data = process_data(image_files[0])
+data_pca = fit_data(processed_data)
+print "Training data on KNN"
+fit = knn.fit(data_pca, image_files[1])
+print fit
+new_img = string_to_img("/Users/ericzeiberg/Desktop/captcha.jpg")
+pred = classify_image(new_img)
+print pred
